@@ -4,21 +4,29 @@ export interface IMessagePublisherSettings {
 }
 
 export interface IMessagePublisherConf {
-  url     : string;
-  username: string;
-  password: string;
+  // TODO: either find common config for different kinds or define separate types for each
+  //url     : string;
+  protocol?: string; // amqp, amqps, 
+  username : string;
+  password : string;
+  hostname : string;
+  port     : number;
+  vhost?   : string;
+  locale?  : string;
+  ca?      : Array<Buffer>;
+  heartbeat: number;
 }
 
 export interface IMessagePublisher {
-  publish(message: IMessageInput): Promise<IMessageOutput>;
+  publish(input: IPublishInput): Promise<IPublishOutput>;
 }
 
-export interface IMessageInput {
+export interface IPublishInput {
   queue  : string;
   payload: string;
 }
 
-export interface IMessageOutput {
+export interface IPublishOutput {
   success: boolean;
   error  : string | null;
 }

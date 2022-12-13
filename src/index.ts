@@ -1,15 +1,15 @@
-import { newHttpServer } from './http-server';
+import { factory } from './factory';
 
 main();
 
-async function main() {
+async function main(penv = process.env) {
 
-  const port = 8000;
+  const port = Number.parseInt(penv.MC_HTTP_PORT || '8000');
 
-  const app = await newHttpServer();
+  const { app } = await factory(penv);
 
   app.listen(port, () => {
-    console.info('message-publisher is ready at', port);
+    console.info('message-publisher is listening at', port);
   });
 
 }

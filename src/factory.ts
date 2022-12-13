@@ -1,15 +1,17 @@
 import express from 'express';
 import { newMessagePublisher } from './message-publishers';
 
-export async function newHttpServer() {
+export async function factory(penv = process.env) {
   const app = express();
 
   const msgPublisher = await newMessagePublisher({
-    kind: process.env.MESSAGE_PUBLISHER_KIND || 'rabbitmq',
+    kind: penv.MP_KIND || 'rabbitmq',
     conf: {
-      url     : process.env.MESSAGE_PUBLISHER_RABBITMQ_URL || '',
-      username: '',
-      password: '',
+      hostname : penv.MP_HOSTNAME || 'localhost',
+      port     : Number.parseInt(penv.MP_PORT || '0'),
+      username : penv.MP_USERNAME || '',
+      password : penv.MP_PASSWORD || '',
+      heartbeat: 30,
     },
   });
 
@@ -25,5 +27,5 @@ export async function newHttpServer() {
     }
   });
 
-  return app;
+  return { app, msgPublisher };
 }
