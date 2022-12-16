@@ -4,12 +4,10 @@ main();
 
 async function main(penv = process.env) {
 
-  const port = Number.parseInt(penv.MC_HTTP_PORT || '8000');
+  const { app, config } = await factory(penv);
 
-  const { app } = await factory(penv);
-
-  app.listen(port, () => {
-    console.info('message-publisher is listening at', port);
+  app.listen(config.http.port, () => {
+    console.info('unicast-message-publisher is listening at', config.http.port);
   });
 
 }
