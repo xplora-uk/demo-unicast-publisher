@@ -4,6 +4,13 @@ import { IUnicastPublishInput, IUnicastPublishOutput, IUnicastPublisher, IUnicas
 
 export function newRabbitMqUnicastPublisher(settings: IUnicastPublisherConf): Promise<IUnicastPublisher> {
 
+  // When RabbitMQ quits or crashes it will forget the queues and messages 
+  // unless you tell it not to. Two things are required to make sure that messages aren't lost:
+  // we need to mark both the queue and messages as durable.
+  // both publisher and consumer MUST have the same setting
+  const queueOptions   = { durable: true };
+  const messageOptions = { persistent: true };
+
   class RabbitMqUnicastPublisher implements IUnicastPublisher {
 
     constructor(protected _connection: IAmqpConnectionManager) {
@@ -11,7 +18,7 @@ export function newRabbitMqUnicastPublisher(settings: IUnicastPublisherConf): Pr
     }
 
     async unicastPublish(input: IUnicastPublishInput): Promise<IUnicastPublishOutput> {
-      const func = 'RabbitMqUnicastPublisher.publish';
+      const func = 'RabbitMqUnicastPublisher.unicastPublish';
       let success = false, error = '';      
 
       // TODO: optimize channel creation?
@@ -21,11 +28,11 @@ export function newRabbitMqUnicastPublisher(settings: IUnicastPublisherConf): Pr
       // NOTE: If we're not currently connected, these will be queued up in memory until we connect.
       // `sendToQueue()` returns a Promise which is fulfilled or rejected when the message is actually sent or not.
       try {
-        // TODO: check queue options
-        await channelWrapper.assertQueue(input.queue, { durable: false });
+        // our queues are durable
+        await channelWrapper.assertQueue(input.queue, queueOptions);
 
-        // publish message
-        await channelWrapper.sendToQueue(input.queue, input.payload);
+        // publish message and persist; it may not be processed immediately
+        await channelWrapper.sendToQueue(input.queue, Buffer.from(input.payload, 'utf8'), messageOptions);
         success = true;
       } catch (err) {
         error = err instanceof Error ? err.message : 'Unknown error';
