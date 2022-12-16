@@ -6,8 +6,6 @@ const HEADER_APP_ID = 'x-app-id';
 export async function factory(penv = process.env) {
   const app = express();
 
-  // TODO: security by API Key?
-
   app.use(express.json({ limit: '1MB' }));
 
   const config = {
@@ -35,6 +33,7 @@ export async function factory(penv = process.env) {
   app.get('/health', healthCheck);
 
   async function handleQueue(req: Request, res: Response) {
+    // TODO: security by API Key?
     try {
       if (typeof req.body !== 'object') throw new Error('valid JSON expected for request body');
 
