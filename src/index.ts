@@ -1,5 +1,7 @@
+import dotenv from 'dotenv';
 import { factory } from './factory';
 
+dotenv.config();
 main();
 
 async function main(penv = process.env) {
