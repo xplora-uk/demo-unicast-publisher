@@ -37,6 +37,16 @@ export function newRabbitMqMessagePublisher(settings: IMessagePublisherConf): Pr
       return { success, error };
     }
 
+    async close(): Promise<void> {
+      if (this._connection) {
+        try {
+          await this._connection.close();
+        } catch (err) {
+          console.error('RabbitMqMessagePublisher.close error', err);
+        }
+      }
+    }
+
   }
 
   const connection = amqp.connect(
