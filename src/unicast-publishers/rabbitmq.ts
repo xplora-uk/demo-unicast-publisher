@@ -1,17 +1,17 @@
 import amqp from 'amqp-connection-manager';
 import { IAmqpConnectionManager } from 'amqp-connection-manager/dist/esm/AmqpConnectionManager';
-import { IPublishInput, IPublishOutput, IMessagePublisher, IMessagePublisherConf } from '../types';
+import { IUnicastPublishInput, IUnicastPublishOutput, IUnicastPublisher, IUnicastPublisherConf } from '../types';
 
-export function newRabbitMqMessagePublisher(settings: IMessagePublisherConf): Promise<IMessagePublisher> {
+export function newRabbitMqUnicastPublisher(settings: IUnicastPublisherConf): Promise<IUnicastPublisher> {
 
-  class RabbitMqMessagePublisher implements IMessagePublisher {
+  class RabbitMqUnicastPublisher implements IUnicastPublisher {
 
     constructor(protected _connection: IAmqpConnectionManager) {
       // nothing to do
     }
 
-    async publish(input: IPublishInput): Promise<IPublishOutput> {
-      const func = 'RabbitMqMessagePublisher.publish';
+    async unicastPublish(input: IUnicastPublishInput): Promise<IUnicastPublishOutput> {
+      const func = 'RabbitMqUnicastPublisher.publish';
       let success = false, error = '';      
 
       // TODO: optimize channel creation?
@@ -42,7 +42,7 @@ export function newRabbitMqMessagePublisher(settings: IMessagePublisherConf): Pr
         try {
           await this._connection.close();
         } catch (err) {
-          console.error('RabbitMqMessagePublisher.close error', err);
+          console.error('RabbitMqUnicastPublisher.close error', err);
         }
       }
     }
@@ -58,5 +58,5 @@ export function newRabbitMqMessagePublisher(settings: IMessagePublisherConf): Pr
     },
   );
 
-  return Promise.resolve(new RabbitMqMessagePublisher(connection));
+  return Promise.resolve(new RabbitMqUnicastPublisher(connection));
 }

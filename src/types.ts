@@ -1,9 +1,9 @@
-export interface IMessagePublisherSettings {
+export interface IUnicastPublisherSettings {
   kind: 'rabbitmq' | 'redis' | 'kafka' | string;
-  conf: IMessagePublisherConf;
+  conf: IUnicastPublisherConf;
 }
 
-export interface IMessagePublisherConf {
+export interface IUnicastPublisherConf {
   // TODO: either find common config for different kinds or define separate types for each
   //url     : string;
   protocol?: string; // amqp, amqps, 
@@ -17,16 +17,16 @@ export interface IMessagePublisherConf {
   heartbeat: number;
 }
 
-export interface IMessagePublisher {
-  publish(input: IPublishInput): Promise<IPublishOutput>;
+export interface IUnicastPublisher {
+  unicastPublish(input: IUnicastPublishInput): Promise<IUnicastPublishOutput>;
 }
 
-export interface IPublishInput {
+export interface IUnicastPublishInput {
   queue  : string;
   payload: string;
 }
 
-export interface IPublishOutput {
+export interface IUnicastPublishOutput {
   success: boolean;
   error  : string | null;
 }

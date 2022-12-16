@@ -1,5 +1,5 @@
 {
-  "name": "message-publisher-demo",
+  "name": "unicast-publisher-demo",
   "version": "1.0.0",
   "description": "demo for message publisher",
   "main": "build/index.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/XploraTechnologiesAS/message-publisher-demo.git"
+    "url": "git+https://github.com/XploraTechnologiesAS/unicast-publisher-demo.git"
   },
   "keywords": [
     "message",
@@ -23,9 +23,9 @@
   "author": "Haci Murat Yaman",
   "license": "SEE LICENSE IN LICENSE",
   "bugs": {
-    "url": "https://github.com/XploraTechnologiesAS/message-publisher-demo/issues"
+    "url": "https://github.com/XploraTechnologiesAS/unicast-publisher-demo/issues"
   },
-  "homepage": "https://github.com/XploraTechnologiesAS/message-publisher-demo#readme",
+  "homepage": "https://github.com/XploraTechnologiesAS/unicast-publisher-demo#readme",
   "devDependencies": {
     "@types/amqplib": "^0.10.0",
     "@types/express": "^4.17.14",

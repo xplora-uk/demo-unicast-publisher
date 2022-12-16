@@ -1,6 +1,6 @@
-# message-publisher-demo
+# unicast-publisher-demo
 
-demo for a message publisher
+demo for a unicast message publisher
 
 ## requirements
 
@@ -33,8 +33,8 @@ Layout:
 
 ```plain
 src/
-  message-publishers/
-    rabbitmq.ts  message publisher adapted for rabbitmq
+  unicast-publishers/
+    rabbitmq.ts  unicast message publisher adapted for rabbitmq
     index.ts     loader for this folder
   factory.ts     prepares dependencies
   index.ts       main entry file of this codebase; prepared express app and starts it.
