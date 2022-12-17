@@ -1,15 +1,18 @@
 import amqp, { ChannelWrapper } from 'amqp-connection-manager';
 import { IAmqpConnectionManager } from 'amqp-connection-manager/dist/esm/AmqpConnectionManager';
+import { Channel } from 'amqplib';
 import { IUnicastPublishInput, IUnicastPublishOutput, IUnicastPublisher, IUnicastPublisherConf } from '../types';
 
-const connectionOptions = {
-  timeout: 5000,
-  heartbeatIntervalInSeconds: 15, // default is 5
-  reconnectTimeInSeconds: 15, // defaults to heartbeatIntervalInSeconds
+const connMgrOptions = {
+  heartbeatIntervalInSeconds: 15,   // default is 5
+  reconnectTimeInSeconds    : 15,   // defaults to heartbeatIntervalInSeconds
+  connectionOptions         : {
+    timeout: 5000,
+  },
 };
 
 const channelOptions = {
-  publishTimeout: 10000,
+  publishTimeout: 5000,
 };
 
 // When RabbitMQ quits or crashes it will forget the queues and messages 
@@ -29,13 +32,19 @@ export class RabbitMqUnicastPublisher implements IUnicastPublisher {
     // do nothing
   }
 
-  _channelCache(name: string): ChannelWrapper {
+  protected _channelCache(name: string): ChannelWrapper {
     // NOTE: If we're not currently connected, these will be queued up in memory until we connect.
     //if (!this._connection.isConnected) { // NOT connected
     //  this._connection.reconnect();
     //}
     if (!(name in this._channels) || !this._channels[name]) {
-      this._channels[name] = this._connection.createChannel({ ...channelOptions, name });
+      this._channels[name] = this._connection.createChannel({
+        ...channelOptions,
+        name,
+        setup: async (ch: Channel) => {
+          return ch.assertQueue(name, queueOptions);
+        },
+      });
     }
     return this._channels[name];
   }
@@ -46,7 +55,6 @@ export class RabbitMqUnicastPublisher implements IUnicastPublisher {
 
     try {
       const channelWrapper = this._channelCache(input.queue);
-      await channelWrapper.assertQueue(input.queue, queueOptions);
       await channelWrapper.sendToQueue(input.queue, Buffer.from(input.payload, 'utf8'), messageOptions);
       success = true;
     } catch (err) {
@@ -68,6 +76,6 @@ export class RabbitMqUnicastPublisher implements IUnicastPublisher {
 }
 
 export function newRabbitMqUnicastPublisher(settings: IUnicastPublisherConf): Promise<IUnicastPublisher> {
-  const connection = amqp.connect({ ...settings, connectionOptions });
+  const connection = amqp.connect(settings, connMgrOptions);
   return Promise.resolve(new RabbitMqUnicastPublisher(connection));
 }

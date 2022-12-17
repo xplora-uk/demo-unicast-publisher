@@ -1,7 +1,10 @@
 import express, { Request, Response } from 'express';
+import { randomUUID } from 'node:crypto';
 import { newUnicastPublisher } from './unicast-publishers';
 
 const HEADER_APP_ID = 'x-app-id';
+const HEADER_REQ_ID = 'x-request-id';
+const HEADER_DATE   = 'x-date';
 
 export async function factory(penv = process.env) {
   const app = express();
@@ -15,11 +18,7 @@ export async function factory(penv = process.env) {
     messagePublisher: {
       kind: penv.UCP_KIND || 'rabbitmq',
       conf: {
-        hostname : penv.UCP_HOSTNAME || 'localhost',
-        port     : Number.parseInt(penv.UCP_PORT || '0'),
-        username : penv.UCP_USERNAME || '',
-        password : penv.UCP_PASSWORD || '',
-        heartbeat: 30,
+        url: penv.UCP_URL || 'amqp://localhost:5672',
       },
     },
   };
@@ -35,15 +34,23 @@ export async function factory(penv = process.env) {
   async function handleQueue(req: Request, res: Response) {
     // TODO: security by API Key?
     try {
+      console.info('new request', req.path, req.body, req.headers);
       if (typeof req.body !== 'object') throw new Error('valid JSON expected for request body');
 
-      const sender     = req.get(HEADER_APP_ID) || 'unknown'; // TODO: validate sender
-      const { queue }  = req.params as Record<string, string>;
-      const payloadObj = { meta: { sender, queue }, data: req.body };
+      // TODO: validate sender
+      const sender = req.get(HEADER_APP_ID) || 'unknown';
+      const id     = req.get(HEADER_REQ_ID) || randomUUID();
+      const date   = req.get(HEADER_DATE) || (new Date()).toISOString();
+
+      const { queue } = req.params as Record<string, string>;
+
       // TODO: validate payloadObj based on the contract for that queue
+      const payloadObj = { meta: { sender, id, date, queue }, data: req.body };
+
       const payload = JSON.stringify(payloadObj);
       const result  = await ucPublisher.unicastPublish({ queue, payload });
       res.json(result);
+
     } catch (err) {
       console.error('unicast-publisher error', err);
       res.json({ error: 'Server error' });
