@@ -34,25 +34,26 @@ export async function factory(penv = process.env) {
   async function handleQueue(req: Request, res: Response) {
     // TODO: security by API Key?
     try {
-      console.info('new request', req.path, req.body, req.headers);
+      console.info(new Date(), 'new request', req.path, req.body, req.headers);
       if (typeof req.body !== 'object') throw new Error('valid JSON expected for request body');
 
-      // TODO: validate sender
-      const sender = req.get(HEADER_APP_ID) || 'unknown';
+      // TODO: validate app ID
+      const app_id = req.get(HEADER_APP_ID) || 'unknown';
       const id     = req.get(HEADER_REQ_ID) || randomUUID();
       const date   = req.get(HEADER_DATE) || (new Date()).toISOString();
 
       const { queue } = req.params as Record<string, string>;
 
       // TODO: validate payloadObj based on the contract for that queue
-      const payloadObj = { meta: { sender, id, date, queue }, data: req.body };
+      const payloadObj = { meta: { app_id, id, date, queue }, data: req.body };
 
       const payload = JSON.stringify(payloadObj);
       const result  = await ucPublisher.unicastPublish({ queue, payload });
+      console.info(new Date(), { queue, payload, result });
       res.json(result);
 
     } catch (err) {
-      console.error('unicast-publisher error', err);
+      console.error(new Date(), 'unicast-publisher error', err);
       res.json({ error: 'Server error' });
     }
   }
