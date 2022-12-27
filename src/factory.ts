@@ -41,13 +41,14 @@ export async function factory(penv = process.env) {
       const app_id = req.get(HEADER_APP_ID) || 'unknown';
       const id     = req.get(HEADER_REQ_ID) || randomUUID();
       const date   = req.get(HEADER_DATE) || (new Date()).toISOString();
-
+      
       const { queue } = req.params as Record<string, string>;
+      const _meta_ = { app_id, id, date, queue };
 
       // TODO: validate payloadObj based on the contract for that queue
-      const payloadObj = { meta: { app_id, id, date, queue }, data: req.body };
+      const payloadObj = req.body || {}; // keep original data structure
+      const payload = JSON.stringify({ ...payloadObj, _meta_ });
 
-      const payload = JSON.stringify(payloadObj);
       const result  = await ucPublisher.unicastPublish({ queue, payload });
       console.info(new Date(), { queue, payload, result });
       res.json(result);
